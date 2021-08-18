@@ -34,6 +34,7 @@
         <p class="text-white"  id="timerText">Time:</p>
         <!--Create div for card content with card component from Bootstrap-->
         <div id="card-content" class="card mx-auto mt-5"></div>
+        <div id="answers" class="text-white"></div>
       </div>
     </div>
   </div>
@@ -52,12 +53,27 @@
       let q5 = document.createElement('div')
       let sb = document.createElement('div')
       let sco = document.createElement('div')
+      let ra = document.createElement('div')
+      let wa = document.createElement('div')
       //Make a variable for an array key name 'Scores' that will parse the local storage to an array
       //Parses array at key "highScores" and stores it in the "scores" array
       //The value after || is implemented to set the value of the scores to an alternate value if the first cannot be set. JSON.parse will turn the values of localStorage with a key of highScores in to an array
-      const scores = JSON.parse(localStorage.getItem('highScores')) || []
+      let scores = JSON.parse(localStorage.getItem('highScores')) || []
 
-      
+      let answerText = (q) =>{
+        if (q==true) {
+         document.getElementById('answers').innerHTML = `<h1>Correct!</h1>` 
+         setTimeout(() => {
+          document.getElementById('answers').innerHTML =``    
+         }, 1000);
+        }
+        else{
+          document.getElementById('answers').innerHTML = `<h1>Incorrect!</h1>`
+          setInterval(() => {
+            document.getElementById('answers').innerHTML = ``
+          }, 1000);
+        }
+      }
       
       start.className = 'card-body'
       q1.className = 'card-body'
@@ -67,10 +83,12 @@
       q5.className = 'card-body'
       sb.className = 'card-body'
       sco.className = 'card-body'
+      ra.className = 'card-body'
+      wa.className = 'card-body'
       
       start.innerHTML = `<h5 class="card-title">Coding Quiz</h5>
         <p class="card-text">Try to answer the following code-related questions within the time limit. Keep in mind that incorrect answers will penalize your scoretime by 10 reconds</p>
-        <a id="startButton" class="btn btn-primary">Start Quiz</a>`
+        <a class="btn btn-primary startButton">Start Quiz</a>`
       q1.innerHTML = `<h5 class="card-title">Common data types don't include:</h5>
       <a class="btn btn-primary q1wrong">strings</a>
       <a class="btn btn-primary q1wrong">booleans</a>
@@ -102,12 +120,12 @@
         <label for="initials">Enter initials</label>
         <input type="text" name="initials" id="initials"></input>
         <button id="addScore">Submit</button>
-      </form>
-      `    
+      </form>`
+          
       sco.innerHTML = `<h5 class="card-title">Highscores</h5>
         <ul id="scoreList"></ul>
-        <a id="startButton" class="btn btn-primary">Go Back</a>
-        <a class="btn btn-primary">Clear Highscores</a>`
+        <a class="btn btn-primary restart">Go Back</a>
+        <a class="cs btn btn-primary">Clear Highscores</a>`
 
       document.getElementById('card-content').append(start)
       
@@ -115,6 +133,13 @@
           if (event.target.classList.contains("ts")){
             event.preventDefault()
             clearInterval(countdown)
+            sco = document.createElement('div')
+            sco.className = 'card-body'
+            sco.innerHTML = `<h5 class="card-title">Highscores</h5>
+            <ul id="scoreList"></ul>
+            <a class="btn btn-primary restart">Go Back</a>
+            <a class="cs btn btn-primary">Clear Highscores</a>`
+            sco.remove()
             start.remove()
             q1.remove()
             q2.remove()
@@ -122,54 +147,77 @@
             q4.remove()
             q5.remove()
             sb.remove()
+            document.getElementById('card-content').innerHTML = ''
             document.getElementById('card-content').append(sco)
+            document.getElementById('scoreList').innerHTML = ''
+            scores = JSON.parse(localStorage.getItem('highScores')) || []
             scores.forEach(element => {
               let list = document.createElement('li')
               list.textContent = `Initals: ${element.initials} Score: ${element.time}`
               document.getElementById('scoreList').append(list)
             });
+            
+            if (scores.length==0) {
+              console.log(scores)
+              document.getElementById('scoreList').innerHTML = '<p>Sorry, we can\'t find any scores! Don\'t worry though, everything is STILL AWESOME!</p>'
+            }
           }
         })
-
-      document.getElementById('startButton').addEventListener('click', event => {
-        event.preventDefault()
-        countdown = setInterval(function () {
-        document.getElementById('timer').textContent = seconds;
-        if (seconds <= 0){
+      
+      document.addEventListener('click', event => {
+        if (event.target.classList.contains("cs")) {
           event.preventDefault()
-          q1.remove()
-          q2.remove()
-          q3.remove()
-          q4.remove()
-          q5.remove()
-          sb.innerHTML = `<h5 class="card-title">All done!</h5>
+          localStorage.clear()
+          document.getElementById('scoreList').innerHTML = '<p>Sorry, we can\'t find any scores! Don\'t worry though, everything is STILL AWESOME!</p>'
+        }       
+      })
+
+      document.addEventListener('click', event => {
+          if (event.target.classList.contains("startButton")) {
+            event.preventDefault()
+            countdown = setInterval(function () {
+              document.getElementById('timer').textContent = seconds;
+              if (seconds <= 0) {
+                event.preventDefault()
+                q1.remove()
+                q2.remove()
+                q3.remove()
+                q4.remove()
+                q5.remove()
+                sb.innerHTML = `<h5 class="card-title">All done!</h5>
             <p class="card-text">Your score is ${seconds}</p>
             <form>
               <label for="initials">Enter initials</label>
               <input type="text" name="initials" id="initials"></input>
               <button id="addScore">Submit</button>
             </form>`
-            document.getElementById('card-content').append(sb)
-            document.getElementById('timer').textContent = seconds;
-            clearInterval(countdown)
+                document.getElementById('card-content').append(sb)
+                document.getElementById('timer').textContent = seconds;
+                clearInterval(countdown)
+              }
+              seconds--;
+            }, 1000);
+            start.remove()
+            document.getElementById('card-content').append(q1)
           }
-          seconds--;
-        }, 1000);
-        start.remove()
-        document.getElementById('card-content').append(q1)
-      })
+          if (event.target.classList.contains("restart")) {
+            location.reload()
+          }
+        })
 
       document.addEventListener('click', event =>{
         if(event.target.classList.contains("q1wrong")){
           seconds = seconds - 10
           q1.remove()
           document.getElementById('card-content').append(q2)
+          answerText(false)
         }
       })
       document.addEventListener('click', event => {
         if (event.target.classList.contains("q1right")) {
           q1.remove()
           document.getElementById('card-content').append(q2)
+          answerText(true)
         }
       })
       document.addEventListener('click', event => {
@@ -177,12 +225,14 @@
           seconds = seconds - 10
           q2.remove()
           document.getElementById('card-content').append(q3)
+          answerText(false)
         }
       })
       document.addEventListener('click', event => {
         if (event.target.classList.contains("q2right")) {
           q2.remove()
           document.getElementById('card-content').append(q3)
+          answerText(true)
         }
       })
       document.addEventListener('click', event => {
@@ -190,12 +240,14 @@
           seconds = seconds - 10
           q3.remove()
           document.getElementById('card-content').append(q4)
+          answerText(false)
         }
       })
       document.addEventListener('click', event => {
         if (event.target.classList.contains("q3right")) {
           q3.remove()
           document.getElementById('card-content').append(q4)
+          answerText(true)
         }
       })
       document.addEventListener('click', event => {
@@ -203,12 +255,14 @@
           seconds = seconds - 10
           q4.remove()
           document.getElementById('card-content').append(q5)
+          answerText(false)
         }
       })
       document.addEventListener('click', event => {
           if (event.target.classList.contains("q4right")) {
             q4.remove()
             document.getElementById('card-content').append(q5)
+            answerText(true)
           }
         })
       document.addEventListener('click', event => {
@@ -222,9 +276,9 @@
         <label for="initials">Enter initials</label>
         <input type="text" name="initials" id="initials"></input>
         <button id="addScore">Submit</button>
-      </form>
-      `
+      </form>`
           document.getElementById('card-content').append(sb)
+          answerText(false)
           document.getElementById('timer').textContent = seconds;
           clearInterval(countdown)
         }
@@ -242,10 +296,13 @@
       </form>
       `
             document.getElementById('card-content').append(sb)
+            
             document.getElementById('timer').textContent = seconds;
+            answerText(true)
             clearInterval(countdown)
           }
         })
+
       document.addEventListener('click', event=>{
         event.preventDefault()
         if(event.target.id == "addScore"){
