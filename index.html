@@ -305,7 +305,7 @@
 
       document.addEventListener('click', event=>{
         event.preventDefault()
-        if(event.target.id == "addScore"){
+        if(event.target.id == "addScore" && document.getElementById('initials').value != ""){
           //Declare variables to hold initials and time 
           let initials = document.getElementById('initials').value
           let time = document.getElementById('timer').textContent
